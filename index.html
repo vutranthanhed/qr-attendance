@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>ClassCheck QR — Attendance System</title>
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- Version-Pinned QR Scanner & QR Generator Libraries -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-hover: #1d4ed8;
+      --accent: #0f766e;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --success-bg: #dcfce7;
+      --success-text: #166534;
+      --warn-bg: #fef9c3;
+      --warn-text: #854d0e;
+      --err-bg: #fee2e2;
+      --err-text: #991b1b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+      padding-bottom: 48px;
+    }
+
+    /* Top Navigation Bar */
+    .topbar {
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 1.05rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pill-btn {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.28);
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .pill-btn.active {
+      background: #fff;
+      color: var(--primary);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 640px;
+      margin: 16px auto;
+      padding: 0 14px;
+    }
+    .container.wide {
+      max-width: 1080px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .subtext {
+      font-size: 0.86rem;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    /* Form Controls */
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 5px;
+    }
+    input[type="text"], input[type="password"], select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+    input:focus, select:focus {
+      outline: 2px solid var(--primary);
+      border-color: transparent;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      font-size: 0.96rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.05s;
+    }
+    .btn:active { transform: scale(0.99); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-outline {
+      background: #f8fafc;
+      color: var(--text);
+      border: 1px solid #cbd5e1;
+    }
+    .btn-danger { background: #dc2626; color: #fff; }
+    .btn-sm {
+      width: auto;
+      padding: 6px 11px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+    }
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .btn-row > .btn { flex: 1; min-width: 120px; }
+
+    /* Alerts & Receipts */
+    .alert {
+      padding: 13px 15px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 14px;
+      word-break: break-word;
+    }
+    .alert-success { background: var(--success-bg); color: var(--success-text); border: 1px solid #86efac; }
+    .alert-warn { background: var(--warn-bg); color: var(--warn-text); border: 1px solid #fde047; }
+    .alert-err { background: var(--err-bg); color: var(--err-text); border: 1px solid #fca5a5; }
+
+    /* Camera Box */
+    #qr-reader {
+      width: 100%;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      margin-bottom: 12px;
+    }
+
+    /* Projector Split View */
+    .projector-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 20px;
+      align-items: center;
+    }
+    @media (min-width: 768px) {
+      .projector-grid { grid-template-columns: 1.1fr 0.9fr; }
+    }
+    .qr-display-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: #fff;
+      border: 2px dashed #cbd5e1;
+      border-radius: 16px;
+    }
+    .timer-big {
+      font-size: 3.2rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+      color: var(--primary);
+      text-align: center;
+      line-height: 1.1;
+      margin: 8px 0;
+    }
+    .counter-badge {
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 14px;
+      text-align: center;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 10px 0;
+    }
+
+    /* Roster Table */
+    .roster-list {
+      max-height: 340px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .roster-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.88rem;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .roster-item:last-child { border-bottom: none; }
+    .status-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.76rem;
+    }
+    .st-P { background: #dcfce7; color: #166534; }
+    .st-L { background: #fef9c3; color: #854d0e; }
+    .st-E { background: #e0f2fe; color: #075985; }
+    .st-- { background: #f1f5f9; color: #64748b; }
+
+    .hidden { display: none !important; }
+
+    /* Print Poster Styling */
+    @media print {
+      body * { visibility: hidden; }
+      #printable-poster, #printable-poster * { visibility: visible; }
+      #printable-poster {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 40px;
+        text-align: center;
+        border: none;
+      }
+      .no-print { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="topbar no-print">
+    <div class="brand">
+      <span>🎓 ClassCheck QR</span>
+    </div>
+    <div class="top-actions">
+      <button id="btn-mode-student" class="pill-btn active" onclick="switchMode('STUDENT')">Student</button>
+      <button id="btn-mode-teacher" class="pill-btn" onclick="switchMode('TEACHER')">Lecturer</button>
+      <button id="btn-lang" class="pill-btn" onclick="toggleLanguage()">EN | VI</button>
+    </div>
+  </header>
+
+  <main id="main-container" class="container">
+
+    <!-- iOS SAFARI STANDALONE GUARD BANNER -->
+    <div id="ios-install-banner" class="alert alert-warn hidden">
+      <div id="t-ios-guard"></div>
+    </div>
+
+    <!-- GLOBAL STATUS / RECEIPT ALERT -->
+    <div id="status-box" class="alert hidden"></div>
+
+    <!-- ================================================================== -->
+    <!-- VIEW 1: STUDENT MODE                                               -->
+    <!-- ================================================================== -->
+    <section id="view-student">
+
+      <!-- 1A. COURSE / LECTURER SWITCHER CARD -->
+      <div class="card">
+        <div class="card-title">
+          <span data-i18n="stu_course_title">My Registered Courses</span>
+          <button class="btn btn-outline btn-sm" onclick="toggleAddCourseBox()" data-i18n="stu_add_course_btn">+ Link Course</button>
+        </div>
+
+        <div id="student-has-courses" class="hidden">
+          <label data-i18n="stu_select_lecturer">Lecturer / Installation:</label>
+          <select id="sel-student-inst" onchange="onStudentInstChange()"></select>
+
+          <label data-i18n="stu_select_class">Class:</label>
+          <select id="sel-student-class"></select>
+
+          <div class="subtext" id="stu-bound-info"></div>
+        </div>
+
+        <div id="student-no-courses">
+          <p class="subtext" data-i18n="stu_no_course_desc">
+            Week 1 Setup: Scan your lecturer's Course Onboarding QR code (or paste the setup link) to link your Student ID.
+          </p>
+        </div>
+
+        <!-- ONBOARDING / LINK NEW COURSE SUB-PANEL -->
+        <div id="box-add-course" class="hidden" style="margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">
+          <div class="btn-row" style="margin-bottom:12px;">
+            <button class="btn btn-outline btn-sm" onclick="startCameraScanner('ONBOARD')" data-i18n="stu_scan_onboard_qr">📷 Scan Onboarding QR</button>
+          </div>
+
+          <label data-i18n="stu_api_url_label">Or Paste Lecturer Web App URL:</label>
+          <input type="text" id="inp-onboard-api" placeholder="https://script.google.com/macros/s/.../exec" />
+
+          <label data-i18n="stu_id_label">Your Student ID (MSSV):</label>
+          <input type="text" id="inp-student-id" placeholder="e.g., 22001001" />
+
+          <div class="subtext" style="font-size:0.78rem; background:#f1f5f9; padding:9px; border-radius:8px;" data-i18n="privacy_notice">
+            🔒 Privacy Notice: This app stores a browser registration token and calculates your distance from the classroom only at the moment you check in. Raw street coordinates are not permanently stored.
+          </div>
+
+          <button class="btn btn-primary" onclick="submitStudentOnboarding()" data-i18n="stu_register_btn">Verify Roster & Register Device</button>
+        </div>
+      </div>
+
+      <!-- 1B. DAILY CHECK-IN SCANNER CARD -->
+      <div class="card" id="card-daily-checkin">
+        <div class="card-title">
+          <span data-i18n="stu_checkin_title">Daily Classroom Check-In</span>
+        </div>
+        <p class="subtext" data-i18n="stu_checkin_desc">
+          Point your camera at the classroom QR code and ensure Location (GPS) is enabled.
+        </p>
+
+        <!-- SHARED CAMERA CONTAINER -->
+        <div id="qr-reader" class="hidden"></div>
+        <button id="btn-stop-camera" class="btn btn-outline hidden" style="margin-bottom:10px;" onclick="stopCameraScanner()" data-i18n="btn_cancel_scan">Cancel Camera</button>
+
+        <button id="btn-start-checkin" class="btn btn-accent" onclick="startCameraScanner('CHECKIN')" data-i18n="stu_scan_checkin_btn">
+          📷 Scan Classroom QR to Check In
+        </button>
+
+        <!-- Manual fallback input if camera is broken -->
+        <div style="margin-top:12px; text-align:center;">
+          <a href="javascript:void(0)" style="font-size:0.8rem; color:var(--muted);" onclick="toggleManualQrInput()" data-i18n="stu_camera_issue_link">
+            Camera not working? Enter classroom code manually
+          </a>
+          <div id="box-manual-qr" class="hidden" style="margin-top:8px;">
+            <input type="text" id="inp-manual-qr" placeholder="QR_ENG101_..." />
+            <button class="btn btn-outline btn-sm" onclick="handleManualQrSubmit()" data-i18n="stu_submit_manual_qr">Submit Code with GPS</button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ================================================================== -->
+    <!-- VIEW 2: LECTURER MODE (PHONE REMOTE & CLASSROOM PC DASHBOARD)      -->
+    <!-- ================================================================== -->
+    <section id="view-teacher" class="hidden">
+
+      <!-- 2A. LECTURER LOGIN / PAIRING CARD -->
+      <div id="card-teacher-login" class="card">
+        <div class="card-title" data-i18n="tea_login_title">Lecturer Authentication</div>
+        <p class="subtext" data-i18n="tea_login_desc">
+          Scan your private Lecturer Pairing QR from your Google Sheet (for your personal phone), or enter your 6-digit Temporary Classroom PC Code.
+        </p>
+
+        <div class="btn-row" style="margin-bottom:12px;">
+          <button class="btn btn-outline btn-sm" onclick="startCameraScanner('TEACHER_PAIR')" data-i18n="tea_scan_pair_qr">📷 Scan Lecturer Pairing QR</button>
+        </div>
+
+        <label data-i18n="tea_api_url_label">Google Apps Script Web App URL:</label>
+        <input type="text" id="inp-tea-api" placeholder="https://script.google.com/macros/s/.../exec" />
+
+        <label data-i18n="tea_token_label">Master Key OR 6-Digit Temp PC Code:</label>
+        <input type="password" id="inp-tea-token" placeholder="TKEY_... or 6-digit code" />
+
+        <label data-i18n="tea_session_type_label">Device Type:</label>
+        <select id="sel-tea-persistence">
+          <option value="LOCAL" data-i18n="tea_persist_phone">Personal Phone / Laptop (Stay Signed In)</option>
+          <option value="SESSION" data-i18n="tea_persist_pc">Shared Classroom PC (Auto-Logout when tab closes)</option>
+        </select>
+
+        <button class="btn btn-primary" onclick="loginTeacher()" data-i18n="tea_login_btn">Sign In to Teacher Mode</button>
+      </div>
+
+      <!-- 2B. ACTIVE TEACHER DASHBOARD (5 PANELS) -->
+      <div id="box-teacher-dashboard" class="hidden">
+
+        <!-- PANEL 1: SESSION CONTROL & PROJECTOR VIEW -->
+        <div class="card">
+          <div class="card-title">
+            <span data-i18n="tea_panel1_title">1. Session Control & Live Projector</span>
+            <div style="display:flex; gap:6px;">
+              <button class="btn btn-outline btn-sm" onclick="toggleProjectorFullscreen()" data-i18n="tea_fullscreen_btn">🖥️ Projector View</button>
+              <button class="btn btn-outline btn-sm" onclick="refreshTeacherState()" title="Refresh">🔄</button>
+            </div>
+          </div>
+
+          <label data-i18n="tea_select_class">Active Class:</label>
+          <select id="sel-tea-class" onchange="onTeacherClassChange()"></select>
+
+          <div class="projector-grid">
+            <!-- Left: QR Code Box -->
+            <div class="qr-display-box" id="printable-poster">
+              <div style="font-weight:700; font-size:1.05rem; margin-bottom:6px;" id="poster-class-title">Class QR</div>
+              <div id="teacher-qr-canvas" style="margin:10px 0;"></div>
+              <div style="font-size:0.8rem; color:var(--muted); text-align:center;" id="poster-qr-subtitle">
+                Scan via ClassCheck App / Quét bằng ứng dụng điểm danh
+              </div>
+            </div>
+
+            <!-- Right: Countdown + Counter + Start/Stop Buttons -->
+            <div>
+              <div id="tea-session-badge" style="text-align:center; font-weight:700; font-size:0.9rem; color:var(--muted);">
+                SESSION CLOSED
+              </div>
+              <div class="timer-big" id="tea-countdown">00:00</div>
+
+              <div class="counter-badge">
+                <span id="tea-live-count">0 / 0</span>
+                <div style="font-size:0.8rem; font-weight:500; color:var(--muted);" id="tea-live-breakdown">Present: 0 | Late: 0</div>
+              </div>
+
+              <!-- GPS Calibration Mode Checkbox -->
+              <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:10px 0;">
+                <input type="checkbox" id="chk-use-phone-gps" style="width:18px; height:18px;" />
+                <span data-i18n="tea_calibrate_gps_chk">📍 Calibrate Room GPS from this device on Start</span>
+              </label>
+
+              <button id="btn-tea-start" class="btn btn-accent" onclick="teacherStartSession()" data-i18n="tea_start_btn">
+                ▶️ START ATTENDANCE
+              </button>
+
+              <div class="btn-row">
+                <button class="btn btn-outline btn-sm" onclick="teacherControlSession('EXTEND_2M')" data-i18n="tea_extend_btn">+2 Mins</button>
+                <button class="btn btn-outline btn-sm" onclick="teacherControlSession('REOPEN_5M')" data-i18n="tea_reopen_btn">Reopen 5m</button>
+                <button class="btn btn-danger btn-sm" onclick="teacherControlSession('CLOSE_NOW')" data-i18n="tea_close_btn">Close Now</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL 2 & 3: LIVE ROSTER SEARCH, MANUAL OVERRIDE & DEVICE LOCK RESET -->
+        <div class="card no-print">
+          <div class="card-title">
+            <span data-i18n="tea_panel2_title">2. Roster Search, Manual Mark & Device Reset</span>
+            <button class="btn btn-outline btn-sm" onclick="toggleRosterVisibility()" id="btn-toggle-names" data-i18n="tea_show_hide_names">👁️ Show/Hide List</button>
+          </div>
+
+          <input type="text" id="inp-roster-search" placeholder="🔍 Search Student ID or Name..." oninput="renderTeacherRoster()" />
+
+          <div id="tea-roster-container" class="roster-list"></div>
+        </div>
+
+        <!-- PANEL 4 & 5: QR STUDIO, REGISTRATION GATE & ADMIN TOOLS -->
+        <div class="card no-print">
+          <div class="card-title" data-i18n="tea_panel4_title">3. QR Mode, Registration Gate & Admin</div>
+
+          <div class="btn-row" style="margin-bottom:10px;">
+            <button id="btn-qr-mode-toggle" class="btn btn-outline btn-sm" onclick="toggleQrMode()">
+              QR Mode: STATIC
+            </button>
+            <button id="btn-reg-gate-toggle" class="btn btn-outline btn-sm" onclick="teacherToggleRegGate()">
+              New Student Registration: OPEN
+            </button>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-outline btn-sm" onclick="window.print()" data-i18n="tea_print_qr_btn">🖨️ Print Classroom QR Poster</button>
+            <button class="btn btn-outline btn-sm" onclick="teacherRotateStaticQr()" data-i18n="tea_replace_qr_btn">🔑 Replace Static QR Secret</button>
+            <button class="btn btn-outline btn-sm" onclick="teacherRebuildSheet()" data-i18n="tea_rebuild_sheet_btn">📊 Sync Sheet Grids</button>
+            <button class="btn btn-danger btn-sm" onclick="logoutTeacher()" data-i18n="tea_logout_btn">Sign Out</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    /**
+     * ========================================================================
+     * 1. BILINGUAL DICTIONARY (EN / VI)
+     * ========================================================================
+     */
+    const I18N = {
+      en: {
+        stu_course_title: "My Registered Courses",
+        stu_add_course_btn: "+ Link Course",
+        stu_select_lecturer: "Lecturer / Installation:",
+        stu_select_class: "Class:",
+        stu_no_course_desc: "Week 1 Setup: Scan your lecturer's Course Onboarding QR code (or paste the setup link) to link your Student ID.",
+        stu_scan_onboard_qr: "📷 Scan Onboarding QR",
+        stu_api_url_label: "Or Paste Lecturer Web App URL:",
+        stu_id_label: "Your Student ID (MSSV):",
+        privacy_notice: "🔒 Privacy Notice: This app stores a browser registration token and calculates your distance from the classroom only at the moment you check in. Raw street coordinates are not permanently stored.",
+        stu_register_btn: "Verify Roster & Register Device",
+        stu_checkin_title: "Daily Classroom Check-In",
+        stu_checkin_desc: "Point your camera at the classroom QR code and ensure Location (GPS) is enabled.",
+        btn_cancel_scan: "Cancel Camera",
+        stu_scan_checkin_btn: "📷 Scan Classroom QR to Check In",
+        stu_camera_issue_link: "Camera not working? Enter classroom code manually",
+        stu_submit_manual_qr: "Submit Code with GPS",
+        tea_login_title: "Lecturer Authentication",
+        tea_login_desc: "Scan your private Lecturer Pairing QR from your Google Sheet (for your personal phone), or enter your 6-digit Temporary Classroom PC Code.",
+        tea_scan_pair_qr: "📷 Scan Lecturer Pairing QR",
+        tea_api_url_label: "Google Apps Script Web App URL:",
+        tea_token_label: "Master Key OR 6-Digit Temp PC Code:",
+        tea_session_type_label: "Device Type:",
+        tea_persist_phone: "Personal Phone / Laptop (Stay Signed In)",
+        tea_persist_pc: "Shared Classroom PC (Auto-Logout when tab closes)",
+        tea_login_btn: "Sign In to Teacher Mode",
+        tea_panel1_title: "1. Session Control & Live Projector",
+        tea_fullscreen_btn: "🖥️ Projector View",
+        tea_select_class: "Active Class:",
+        tea_calibrate_gps_chk: "📍 Calibrate Room GPS from this device on Start",
+        tea_start_btn: "▶️ START ATTENDANCE",
+        tea_extend_btn: "+2 Mins",
+        tea_reopen_btn: "Reopen 5m",
+        tea_close_btn: "Close Now",
+        tea_panel2_title: "2. Roster Search, Manual Mark & Device Reset",
+        tea_show_hide_names: "👁️ Show/Hide List",
+        tea_panel4_title: "3. QR Mode, Registration Gate & Admin",
+        tea_print_qr_btn: "🖨️ Print Classroom QR Poster",
+        tea_replace_qr_btn: "🔑 Replace Static QR Secret",
+        tea_rebuild_sheet_btn: "📊 Sync Sheet Grids",
+        tea_logout_btn: "Sign Out",
+        ios_guard_msg: "📱 iPhone Tip: Register and check in using the same browser (Safari OR Home Screen icon). Switching between Safari and Home Screen creates a separate memory space.",
+        // Server Response Messages
+        ONBOARD_CONFIRMED: "✅ Registered! Student: {name} ({id}). Linked {count} class(es).",
+        CONFIRMED_PRESENT: "✅ Attendance Confirmed: PRESENT ({time} | {dist}m from room)",
+        CONFIRMED_LATE: "🕒 Attendance Confirmed: LATE ({time} | {dist}m from room)",
+        ALREADY_RECORDED: "ℹ️ Already recorded for this session ({status} at {time}).",
+        ERR_NOT_ON_ROSTER: "❌ Student ID {id} was not found in the lecturer's roster.",
+        ERR_DEVICE_BOUND_OTHER: "⛔ This browser/device is already registered to another student in this course.",
+        ERR_CREDENTIAL_MISMATCH: "⚠️ This browser is not registered for Student ID {id}. If you changed phones or cleared browser data, ask your lecturer to tap 'Reset Device'.",
+        ERR_REG_LOCKED: "🔒 New device registration is currently locked by the lecturer.",
+        ERR_SESSION_CLOSED: "🔒 Attendance is currently closed for this class.",
+        ERR_INVALID_QR: "❌ Invalid or expired QR code. Please scan the active classroom QR.",
+        ERR_LOCATION_OUT_OF_RANGE: "📍 Outside classroom range ({dist}m away; max allowed: {max}m, GPS accuracy: ±{acc}m). Tap Retry or ask your lecturer for manual check-in.",
+        ERR_GPS_UNAVAILABLE: "📍 Unable to read GPS location. Please allow Location permissions and retry.",
+        ERR_SERVER_BUSY: "⏳ Server is busy processing simultaneous scans. Retrying...",
+        ERR_UNAUTHORIZED: "⛔ Invalid or expired Lecturer credential.",
+        DEVICE_RESET_OK: "🔓 Device lock reset for Student ID {id}. They can now register their phone."
+      },
+      vi: {
+        stu_course_title: "Khóa học đã đăng ký",
+        stu_add_course_btn: "+ Liên kết môn học",
+        stu_select_lecturer: "Giảng viên:",
+        stu_select_class: "Lớp học phần:",
+        stu_no_course_desc: "Thiết lập Tuần 1: Quét mã QR Khóa học của giảng viên (hoặc dán liên kết) để đăng ký Mã số sinh viên (MSSV).",
+        stu_scan_onboard_qr: "📷 Quét mã QR Khóa học",
+        stu_api_url_label: "Hoặc dán URL Web App của Giảng viên:",
+        stu_id_label: "Mã số sinh viên (MSSV):",
+        privacy_notice: "🔒 Quyền riêng tư: Ứng dụng chỉ lưu mã đăng ký trình duyệt và tính khoảng cách tới phòng học ngay lúc bạn bấm điểm danh. Không theo dõi vị trí nền.",
+        stu_register_btn: "Xác thực Danh sách & Đăng ký Thiết bị",
+        stu_checkin_title: "Điểm danh Hàng ngày",
+        stu_checkin_desc: "Hướng camera vào mã QR của lớp học và đảm bảo đã bật Vị trí (GPS).",
+        btn_cancel_scan: "Đóng Camera",
+        stu_scan_checkin_btn: "📷 Quét mã QR Lớp học để Điểm danh",
+        stu_camera_issue_link: "Camera lỗi? Nhập mã lớp thủ công",
+        stu_submit_manual_qr: "Gửi mã kèm GPS",
+        tea_login_title: "Xác thực Giảng viên",
+        tea_login_desc: "Quét mã QR Ghép nối Giảng viên trong Google Sheet (dành cho điện thoại cá nhân), hoặc nhập Mã PC Tạm thời (6 chữ số).",
+        tea_scan_pair_qr: "📷 Quét QR Ghép nối Giảng viên",
+        tea_api_url_label: "URL Web App (Google Apps Script):",
+        tea_token_label: "Master Key HOẶC Mã PC 6 số:",
+        tea_session_type_label: "Loại thiết bị:",
+        tea_persist_phone: "Điện thoại / Laptop cá nhân (Giữ đăng nhập)",
+        tea_persist_pc: "Máy tính phòng học dùng chung (Tự đăng xuất khi đóng tab)",
+        tea_login_btn: "Đăng nhập Chế độ Giảng viên",
+        tea_panel1_title: "1. Điều khiển Phiên & Màn hình Chiếu",
+        tea_fullscreen_btn: "🖥️ Toàn màn hình",
+        tea_select_class: "Lớp đang chọn:",
+        tea_calibrate_gps_chk: "📍 Cập nhật tọa độ GPS phòng học từ thiết bị này khi Bắt đầu",
+        tea_start_btn: "▶️ BẮT ĐẦU ĐIỂM DANH",
+        tea_extend_btn: "+2 Phút",
+        tea_reopen_btn: "Mở lại 5p",
+        tea_close_btn: "Đóng ngay",
+        tea_panel2_title: "2. Tìm Sinh viên, Điểm danh Thủ công & Mở khóa Thiết bị",
+        tea_show_hide_names: "👁️ Ẩn/Hiện Danh sách",
+        tea_panel4_title: "3. Chế độ QR, Cổng Đăng ký & Quản trị",
+        tea_print_qr_btn: "🖨️ In Bảng QR Lớp học",
+        tea_replace_qr_btn: "🔑 Đổi mã QR Tĩnh mới",
+        tea_rebuild_sheet_btn: "📊 Đồng bộ Bảng điểm danh",
+        tea_logout_btn: "Đăng xuất",
+        ios_guard_msg: "📱 Lưu ý iPhone: Hãy đăng ký và điểm danh trên cùng một trình duyệt (Safari HOẶC biểu tượng Màn hình chính). Không chuyển đổi qua lại vì iOS tách riêng bộ nhớ.",
+        // Server Response Messages
+        ONBOARD_CONFIRMED: "✅ Đã đăng ký! Sinh viên: {name} ({id}). Đã liên kết {count} lớp.",
+        CONFIRMED_PRESENT: "✅ Điểm danh thành công: CÓ MẶT ({time} | cách phòng {dist}m)",
+        CONFIRMED_LATE: "🕒 Điểm danh thành công: ĐI TRỄ ({time} | cách phòng {dist}m)",
+        ALREADY_RECORDED: "ℹ️ Bạn đã điểm danh buổi này rồi ({status} lúc {time}).",
+        ERR_NOT_ON_ROSTER: "❌ Không tìm thấy MSSV {id} trong danh sách lớp của giảng viên.",
+        ERR_DEVICE_BOUND_OTHER: "⛔ Trình duyệt/thiết bị này đã được gắn với một sinh viên khác.",
+        ERR_CREDENTIAL_MISMATCH: "⚠️ Trình duyệt này chưa được đăng ký cho MSSV {id}. Nếu bạn đổi điện thoại hoặc xóa dữ liệu trình duyệt, hãy báo giảng viên bấm 'Mở khóa thiết bị'.",
+        ERR_REG_LOCKED: "🔒 Giảng viên hiện đang khóa cổng đăng ký thiết bị mới.",
+        ERR_SESSION_CLOSED: "🔒 Cổng điểm danh của lớp này hiện đang đóng.",
+        ERR_INVALID_QR: "❌ Mã QR không hợp lệ hoặc đã hết hạn. Vui lòng quét mã QR hiện tại của lớp.",
+        ERR_LOCATION_OUT_OF_RANGE: "📍 Vị trí ngoài phạm vi phòng học (cách {dist}m; cho phép: {max}m, sai số GPS: ±{acc}m). Nhấn Thử lại hoặc báo giảng viên điểm danh thủ công.",
+        ERR_GPS_UNAVAILABLE: "📍 Không lấy được vị trí GPS. Vui lòng cấp quyền Vị trí cho trình duyệt và thử lại.",
+        ERR_SERVER_BUSY: "⏳ Máy chủ đang xử lý nhiều lượt quét cùng lúc. Đang thử lại...",
+        ERR_UNAUTHORIZED: "⛔ Mã xác thực Giảng viên không đúng hoặc đã hết hạn.",
+        DEVICE_RESET_OK: "🔓 Đã mở khóa thiết bị cho MSSV {id}. Sinh viên có thể đăng ký lại điện thoại."
+      }
+    };
+
+    /**
+     * ========================================================================
+     * 2. STATE & STORAGE MANAGEMENT
+     * ========================================================================
+     */
+    let currentLang = localStorage.getItem('cc_lang') || 'vi';
+    let html5QrScanner = null;
+    let activeScanPurpose = null; // 'ONBOARD' | 'CHECKIN' | 'TEACHER_PAIR'
+
+    // Teacher runtime state
+    let teacherState = null;
+    let teacherPollTimer = null;
+    let teacherCountdownTimer = null;
+    let teacherRotatingQrTimer = null;
+    let showRosterNames = true;
+
+    function getOrCreateDeviceCredential() {
+      let cred = localStorage.getItem('cc_device_cred');
+      if (!cred || cred.length < 20) {
+        const arr = new Uint8Array(24);
+        window.crypto.getRandomValues(arr);
+        cred = 'CRED_' + Array.from(arr, b => ('0' + b.toString(16)).slice(-2)).join('');
+        localStorage.setItem('cc_device_cred', cred);
+      }
+      return cred;
+    }
+
+    function getStudentProfiles() {
+      try {
+        return JSON.parse(localStorage.getItem('cc_student_profiles') || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function saveStudentProfile(instId, profileObj) {
+      const all = getStudentProfiles();
+      all[instId] = profileObj;
+      localStorage.setItem('cc_student_profiles', JSON.stringify(all));
+      localStorage.setItem('cc_active_inst', instId);
+    }
+
+    function getTeacherAuth() {
+      const localData = localStorage.getItem('cc_teacher_auth');
+      if (localData) return JSON.parse(localData);
+      const sesData = sessionStorage.getItem('cc_teacher_auth');
+      if (sesData) return JSON.parse(sesData);
+      return null;
+    }
+
+    function saveTeacherAuth(apiUrl, token, persistence) {
+      const payload = JSON.stringify({ apiUrl, token });
+      if (persistence === 'LOCAL') {
+        localStorage.setItem('cc_teacher_auth', payload);
+      } else {
+        sessionStorage.setItem('cc_teacher_auth', payload);
+      }
+    }
+
+    /**
+     * ========================================================================
+     * 3. INITIALIZATION & DEEP LINK PARSING
+     * ========================================================================
+     */
+    window.addEventListener('DOMContentLoaded', () => {
+      getOrCreateDeviceCredential();
+      applyLanguage();
+      checkIosStandaloneNotice();
+      handleUrlDeepLinks();
+      renderStudentCourseSelectors();
+
+      // Register Service Worker for PWA
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+      }
+    });
+
+    function checkIosStandaloneNotice() {
+      const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      if (isIos) {
+        const banner = document.getElementById('ios-install-banner');
+        document.getElementById('t-ios-guard').textContent = I18N[currentLang].ios_guard_msg;
+        banner.classList.remove('hidden');
+      }
+    }
+
+    function handleUrlDeepLinks() {
+      const params = new URLSearchParams(window.location.search);
+      const onboardB64 = params.get('onboard');
+      const pairB64 = params.get('pair');
+
+      if (onboardB64) {
+        try {
+          const decoded = JSON.parse(atob(onboardB64.replace(/-/g, '+').replace(/_/g, '/')));
+          if (decoded.api) {
+            document.getElementById('inp-onboard-api').value = decoded.api;
+            document.getElementById('box-add-course').classList.remove('hidden');
+            showStatus('ℹ️ Course link loaded for ' + (decoded.name || 'Lecturer') + '. Enter your Student ID below.', 'warn');
+          }
+        } catch (e) {}
+      } else if (pairB64) {
+        try {
+          const decoded = JSON.parse(atob(pairB64.replace(/-/g, '+').replace(/_/g, '/')));
+          if (decoded.api && decoded.tkey) {
+            switchMode('TEACHER');
+            document.getElementById('inp-tea-api').value = decoded.api;
+            document.getElementById('inp-tea-token').value = decoded.tkey;
+            loginTeacher();
+          }
+        } catch (e) {}
+      }
+    }
+
+    /**
+     * ========================================================================
+     * 4. TRANSPORT LAYER (CORS-Safe text/plain POST with Auto-Retry)
+     * ========================================================================
+     */
+    async function callBackend(apiUrl, payload, retries = 2) {
+      for (let attempt = 0; attempt <= retries; attempt++) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload),
+            redirect: 'follow'
+          });
+          const data = await response.json();
+          if (data.code === 'ERR_SERVER_BUSY' && attempt < retries) {
+            showStatus(I18N[currentLang].ERR_SERVER_BUSY, 'warn');
+            await new Promise(r => setTimeout(r, 1200 + Math.random() * 1000));
+            continue;
+          }
+          return data;
+        } catch (err) {
+          if (attempt === retries) {
+            return { ok: false, code: 'ERR_NETWORK', message: err.message };
+          }
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
+
+    /**
+     * ========================================================================
+     * 5. STUDENT WORKFLOWS (Onboarding & Daily Check-In)
+     * ========================================================================
+     */
+    function renderStudentCourseSelectors() {
+      const profiles = getStudentProfiles();
+      const instIds = Object.keys(profiles);
+      const hasBox = document.getElementById('student-has-courses');
+      const noBox = document.getElementById('student-no-courses');
+      const addBox = document.getElementById('box-add-course');
+
+      if (instIds.length === 0) {
+        hasBox.classList.add('hidden');
+        noBox.classList.remove('hidden');
+        addBox.classList.remove('hidden');
+        return;
+      }
+
+      hasBox.classList.remove('hidden');
+      noBox.classList.add('hidden');
+
+      const selInst = document.getElementById('sel-student-inst');
+      const activeInst = localStorage.getItem('cc_active_inst') || instIds[0];
+      selInst.innerHTML = instIds.map(id => {
+        const p = profiles[id];
+        return `<option value="${id}" ${id === activeInst ? 'selected' : ''}>${escapeHtml(p.lecturerName)} (${escapeHtml(p.studentId)})</option>`;
+      }).join('');
+
+      onStudentInstChange();
+    }
+
+    function onStudentInstChange() {
+      const profiles = getStudentProfiles();
+      const selInst = document.getElementById('sel-student-inst').value;
+      const p = profiles[selInst];
+      if (!p) return;
+
+      localStorage.setItem('cc_active_inst', selInst);
+      const selClass = document.getElementById('sel-student-class');
+      selClass.innerHTML = (p.enrolledClasses || []).map(c =>
+        `<option value="${escapeHtml(c.classId)}">${escapeHtml(c.classId)} — ${escapeHtml(c.className)}</option>`
+      ).join('');
+
+      document.getElementById('stu-bound-info').textContent =
+        `👤 ${p.fullName} (${p.studentId})`;
+    }
+
+    function toggleAddCourseBox() {
+      document.getElementById('box-add-course').classList.toggle('hidden');
+    }
+
+    async function submitStudentOnboarding() {
+      const apiUrl = document.getElementById('inp-onboard-api').value.trim();
+      const studentId = document.getElementById('inp-student-id').value.trim().toUpperCase();
+
+      if (!apiUrl.startsWith('https://script.google.com/')) {
+        showStatus('⚠️ Please enter a valid Google Apps Script Web App URL.', 'err');
+        return;
+      }
+      if (!studentId) {
+        showStatus('⚠️ Please enter your Student ID (MSSV).', 'err');
+        return;
+      }
+
+      showStatus('⏳ Verifying your Student ID with lecturer roster...', 'warn');
+
+      const pingRes = await callBackend(apiUrl, { action: 'PING' });
+      if (!pingRes.ok) {
+        showStatus('❌ Could not connect to Lecturer Sheet: ' + (pingRes.message || pingRes.code), 'err');
+        return;
+      }
+
+      const cred = getOrCreateDeviceCredential();
+      const res = await callBackend(apiUrl, {
+        action: 'STUDENT_ONBOARD',
+        studentId: studentId,
+        credential: cred
+      });
+
+      if (!res.ok) {
+        showStatus(formatServerMessage(res.code, res.params, res.message), 'err');
+        return;
+      }
+
+      saveStudentProfile(pingRes.installationId, {
+        installationId: pingRes.installationId,
+        lecturerName: pingRes.lecturerName,
+        apiUrl: apiUrl,
+        studentId: res.studentId,
+        fullName: res.fullName,
+        enrolledClasses: res.enrolledClasses
+      });
+
+      document.getElementById('box-add-course').classList.add('hidden');
+      renderStudentCourseSelectors();
+      showStatus(formatServerMessage('ONBOARD_CONFIRMED', {
+        name: res.fullName,
+        id: res.studentId,
+        count: (res.enrolledClasses || []).length
+      }), 'success');
+    }
+
+    async function executeStudentCheckIn(qrString) {
+      const profiles = getStudentProfiles();
+      const instId = document.getElementById('sel-student-inst').value;
+      const classId = document.getElementById('sel-student-class').value;
+      const profile = profiles[instId];
+
+      if (!profile || !classId) {
+        showStatus('⚠️ Please link your course and Student ID first.', 'err');
+        return;
+      }
+
+      showStatus('📍 Reading GPS location & verifying classroom check-in...', 'warn');
+
+      let pos;
+      try {
+        pos = await getAccuratePosition();
+      } catch (gpsErr) {
+        showStatus(I18N[currentLang].ERR_GPS_UNAVAILABLE, 'err');
+        return;
+      }
+
+      const requestId = 'REQ_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      const payload = {
+        action: 'STUDENT_CHECKIN',
+        studentId: profile.studentId,
+        classId: classId,
+        credential: getOrCreateDeviceCredential(),
+        qrPayload: qrString,
+        requestId: requestId,
+        lat: pos.coords.latitude,
+        lng: pos.coords.longitude,
+        accuracy: pos.coords.accuracy
+      };
+
+      const res = await callBackend(profile.apiUrl, payload, 2);
+
+      if (res.ok && res.receipt) {
+        const r = res.receipt;
+        showStatus(formatServerMessage(res.code, {
+          status: r.status,
+          time: r.time,
+          dist: r.distanceMeters
+        }), 'success');
+      } else if (res.code === 'ERR_NETWORK') {
+        // Uncertain outcome recovery: query receipt endpoint
+        showStatus('⏳ Connection interrupted. Checking if attendance was recorded...', 'warn');
+        const check = await callBackend(profile.apiUrl, {
+          action: 'CHECK_RECEIPT',
+          requestId: requestId,
+          studentId: profile.studentId
+        }, 1);
+        if (check.ok && check.receipt) {
+          showStatus(formatServerMessage('CONFIRMED_' + (check.receipt.status === 'P' ? 'PRESENT' : 'LATE'), {
+            time: check.receipt.time,
+            dist: check.receipt.distanceMeters
+          }), 'success');
+        } else {
+          showStatus('❌ Network error. Please scan again.', 'err');
+        }
+      } else {
+        showStatus(formatServerMessage(res.code, res.params, res.message), 'err');
+      }
+    }
+
+    function toggleManualQrInput() {
+      document.getElementById('box-manual-qr').classList.toggle('hidden');
+    }
+
+    function handleManualQrSubmit() {
+      const code = document.getElementById('inp-manual-qr').value.trim();
+      if (code) executeStudentCheckIn(code);
+    }
+
+    /**
+     * ========================================================================
+     * 6. CAMERA QR SCANNER (Handles Onboarding, Check-In, and Teacher Pairing)
+     * ========================================================================
+     */
+    async function startCameraScanner(purpose) {
+      activeScanPurpose = purpose;
+      const readerEl = document.getElementById('qr-reader');
+      const stopBtn = document.getElementById('btn-stop-camera');
+
+      // Move reader element to top of current view if needed
+      readerEl.classList.remove('hidden');
+      stopBtn.classList.remove('hidden');
+
+      if (html5QrScanner) {
+        try { await html5QrScanner.stop(); } catch (e) {}
+      }
+
+      html5QrScanner = new Html5Qrcode('qr-reader');
+      try {
+        await html5QrScanner.start(
+          { facingMode: 'environment' },
+          { fps: 10, qrbox: { width: 240, height: 240 } },
+          async (decodedText) => {
+            await stopCameraScanner();
+            handleScannedQrText(decodedText, purpose);
+          },
+          () => {}
+        );
+      } catch (err) {
+        readerEl.classList.add('hidden');
+        stopBtn.classList.add('hidden');
+        showStatus('📷 Camera access blocked or unavailable. Please allow camera permission in your browser.', 'err');
+      }
+    }
+
+    async function stopCameraScanner() {
+      const readerEl = document.getElementById('qr-reader');
+      const stopBtn = document.getElementById('btn-stop-camera');
+      readerEl.classList.add('hidden');
+      stopBtn.classList.add('hidden');
+      if (html5QrScanner) {
+        try { await html5QrScanner.stop(); } catch (e) {}
+      }
+    }
+
+    function handleScannedQrText(text, purpose) {
+      // Check if scanned QR is a URL with ?onboard= or ?pair=
+      if (text.includes('?onboard=') || text.includes('?pair=')) {
+        try {
+          const url = new URL(text);
+          if (url.searchParams.get('onboard')) {
+            const obj = JSON.parse(atob(url.searchParams.get('onboard').replace(/-/g, '+').replace(/_/g, '/')));
+            document.getElementById('inp-onboard-api').value = obj.api || '';
+            showStatus('✅ Scanned Course QR for ' + (obj.name || 'Lecturer') + '. Enter your Student ID below.', 'success');
+            return;
+          }
+          if (url.searchParams.get('pair')) {
+            const obj = JSON.parse(atob(url.searchParams.get('pair').replace(/-/g, '+').replace(/_/g, '/')));
+            document.getElementById('inp-tea-api').value = obj.api || '';
+            document.getElementById('inp-tea-token').value = obj.tkey || '';
+            loginTeacher();
+            return;
+          }
+        } catch (e) {}
+      }
+
+      // Check if raw JSON onboarding or pairing payload
+      try {
+        const obj = JSON.parse(text);
+        if (obj.type === 'ONBOARD' && obj.api) {
+          document.getElementById('inp-onboard-api').value = obj.api;
+          showStatus('✅ Scanned Course QR for ' + (obj.name || 'Lecturer') + '. Enter your Student ID below.', 'success');
+          return;
+        }
+        if (obj.type === 'TEACHER_PAIR' && obj.api && obj.tkey) {
+          document.getElementById('inp-tea-api').value = obj.api;
+          document.getElementById('inp-tea-token').value = obj.tkey;
+          loginTeacher();
+          return;
+        }
+      } catch (e) {}
+
+      if (purpose === 'CHECKIN') {
+        executeStudentCheckIn(text);
+      } else {
+        showStatus('⚠️ Unexpected QR format for this action.', 'warn');
+      }
+    }
+
+    /**
+     * ========================================================================
+     * 7. TEACHER MODE CONTROLLERS (5-PANEL INTERFACE)
+     * ========================================================================
+     */
+    async function loginTeacher() {
+      const apiUrl = document.getElementById('inp-tea-api').value.trim();
+      const token = document.getElementById('inp-tea-token').value.trim();
+      const persistence = document.getElementById('sel-tea-persistence').value;
+
+      if (!apiUrl || !token) {
+        showStatus('⚠️ Please enter both Web App URL and Lecturer Key / Temp Code.', 'err');
+        return;
+      }
+
+      showStatus('⏳ Authenticating Lecturer session...', 'warn');
+      const res = await callBackend(apiUrl, {
+        action: 'TEACHER_AUTH',
+        teacherToken: token
+      });
+
+      if (!res.ok) {
+        showStatus(formatServerMessage(res.code, {}, res.message), 'err');
+        return;
+      }
+
+      saveTeacherAuth(apiUrl, token, persistence);
+      document.getElementById('card-teacher-login').classList.add('hidden');
+      document.getElementById('box-teacher-dashboard').classList.remove('hidden');
+      hideStatus();
+      applyTeacherState(res);
+      startTeacherPolling();
+    }
+
+    function logoutTeacher() {
+      localStorage.removeItem('cc_teacher_auth');
+      sessionStorage.removeItem('cc_teacher_auth');
+      stopTeacherPolling();
+      document.getElementById('box-teacher-dashboard').classList.add('hidden');
+      document.getElementById('card-teacher-login').classList.remove('hidden');
+    }
+
+    async function refreshTeacherState() {
+      const auth = getTeacherAuth();
+      if (!auth || document.hidden) return;
+      const selClass = document.getElementById('sel-tea-class').value;
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_GET_STATE',
+        teacherToken: auth.token,
+        classId: selClass
+      }, 1);
+      if (res.ok) applyTeacherState(res);
+    }
+
+    function applyTeacherState(state) {
+      teacherState = state;
+      const sel = document.getElementById('sel-tea-class');
+      const currentVal = state.selectedClassId;
+
+      sel.innerHTML = (state.classes || []).map(c =>
+        `<option value="${escapeHtml(c.classId)}" ${c.classId === currentVal ? 'selected' : ''}>${escapeHtml(c.classId)} — ${escapeHtml(c.className)}</option>`
+      ).join('');
+
+      const activeCfg = (state.classes || []).find(c => c.classId === currentVal);
+      const ses = state.activeSession;
+
+      // Update Registration Gate Button
+      if (activeCfg) {
+        document.getElementById('btn-reg-gate-toggle').textContent =
+          `New Registration: ${activeCfg.regOpen ? 'OPEN ✅' : 'LOCKED 🔒'}`;
+        document.getElementById('poster-class-title').textContent =
+          `${activeCfg.classId} — ${activeCfg.className}`;
+      }
+
+      // Update Live Counter
+      const roster = state.roster || [];
+      const pCount = roster.filter(r => r.status === 'P').length;
+      const lCount = roster.filter(r => r.status === 'L').length;
+      const eCount = roster.filter(r => r.status === 'E').length;
+      document.getElementById('tea-live-count').textContent = `${pCount + lCount} / ${roster.length} Checked In`;
+      document.getElementById('tea-live-breakdown').textContent = `Present: ${pCount} | Late: ${lCount} | Excused: ${eCount}`;
+
+      // Update QR Mode & Render Classroom QR
+      const qrMode = ses ? ses.qrMode : 'STATIC';
+      document.getElementById('btn-qr-mode-toggle').textContent = `QR Mode: ${qrMode}`;
+      renderClassroomQr(activeCfg, qrMode);
+
+      // Update Session Countdown
+      setupTeacherCountdown(ses);
+      renderTeacherRoster();
+    }
+
+    function setupTeacherCountdown(ses) {
+      if (teacherCountdownTimer) clearInterval(teacherCountdownTimer);
+      const badge = document.getElementById('tea-session-badge');
+      const timerEl = document.getElementById('tea-countdown');
+
+      if (!ses || !ses.isOpen) {
+        badge.textContent = '🔒 SESSION CLOSED';
+        badge.style.color = '#dc2626';
+        timerEl.textContent = '00:00';
+        return;
+      }
+
+      const updateTick = () => {
+        const now = Date.now();
+        if (now > ses.closesAtMs) {
+          badge.textContent = '🔒 SESSION EXPIRED';
+          badge.style.color = '#dc2626';
+          timerEl.textContent = '00:00';
+          clearInterval(teacherCountdownTimer);
+          return;
+        }
+        if (now <= ses.presentUntilMs) {
+          const remSec = Math.max(0, Math.floor((ses.presentUntilMs - now) / 1000));
+          badge.textContent = '🟢 OPEN — PRESENT WINDOW';
+          badge.style.color = '#15803d';
+          timerEl.textContent = formatMmSs(remSec);
+        } else {
+          const remSec = Math.max(0, Math.floor((ses.closesAtMs - now) / 1000));
+          badge.textContent = '🟡 OPEN — LATE WINDOW';
+          badge.style.color = '#b45309';
+          timerEl.textContent = formatMmSs(remSec);
+        }
+      };
+      updateTick();
+      teacherCountdownTimer = setInterval(updateTick, 1000);
+    }
+
+    async function renderClassroomQr(classCfg, qrMode) {
+      if (teacherRotatingQrTimer) clearInterval(teacherRotatingQrTimer);
+      const container = document.getElementById('teacher-qr-canvas');
+      if (!classCfg) return;
+
+      const drawQr = async () => {
+        container.innerHTML = '';
+        let payloadText = classCfg.activeQrSecret;
+
+        if (qrMode === 'ROTATING') {
+          const bucket = Math.floor(Date.now() / 15000);
+          const tok = (await sha256Browser(classCfg.activeQrSecret + '|' + bucket)).slice(0, 12);
+          payloadText = JSON.stringify({
+            cid: classCfg.classId,
+            mode: 'ROTATING',
+            tok: tok
+          });
+        }
+
+        new QRCode(container, {
+          text: payloadText,
+          width: 230,
+          height: 230,
+          colorDark: '#0f172a',
+          colorLight: '#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      };
+
+      await drawQr();
+      if (qrMode === 'ROTATING') {
+        teacherRotatingQrTimer = setInterval(drawQr, 5000);
+      }
+    }
+
+    async function teacherStartSession() {
+      const auth = getTeacherAuth();
+      const classId = document.getElementById('sel-tea-class').value;
+      const usePhoneGps = document.getElementById('chk-use-phone-gps').checked;
+
+      let lat = 0, lng = 0;
+      if (usePhoneGps) {
+        showStatus('📍 Acquiring classroom GPS from your device...', 'warn');
+        try {
+          const pos = await getAccuratePosition();
+          lat = pos.coords.latitude;
+          lng = pos.coords.longitude;
+        } catch (e) {
+          if (!confirm('Could not acquire fresh GPS from this device. Start session using saved classroom coordinates instead?')) {
+            return;
+          }
+        }
+      }
+
+      showStatus('⏳ Opening attendance session...', 'warn');
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_START_SESSION',
+        teacherToken: auth.token,
+        classId: classId,
+        usePhoneGps: usePhoneGps && lat !== 0,
+        lat: lat,
+        lng: lng,
+        qrMode: teacherState && teacherState.activeSession ? teacherState.activeSession.qrMode : 'STATIC'
+      });
+
+      if (res.ok) {
+        hideStatus();
+        applyTeacherState(res);
+      } else {
+        showStatus(res.message || res.code, 'err');
+      }
+    }
+
+    async function teacherControlSession(subAction, extra = {}) {
+      const auth = getTeacherAuth();
+      const classId = document.getElementById('sel-tea-class').value;
+      const res = await callBackend(auth.apiUrl, Object.assign({
+        action: 'TEACHER_CONTROL_SESSION',
+        teacherToken: auth.token,
+        classId: classId,
+        subAction: subAction
+      }, extra));
+      if (res.ok) applyTeacherState(res);
+    }
+
+    async function toggleQrMode() {
+      const cur = (teacherState && teacherState.activeSession && teacherState.activeSession.qrMode) || 'STATIC';
+      const next = cur === 'STATIC' ? 'ROTATING' : 'STATIC';
+      await teacherControlSession('SET_QR_MODE', { qrMode: next });
+    }
+
+    function renderTeacherRoster() {
+      const container = document.getElementById('tea-roster-container');
+      if (!showRosterNames) {
+        container.innerHTML = '<div style="padding:14px; text-align:center; color:var(--muted);">🙈 Student list hidden for projector privacy.</div>';
+        return;
+      }
+      const query = document.getElementById('inp-roster-search').value.trim().toLowerCase();
+      const list = (teacherState && teacherState.roster) || [];
+      const filtered = list.filter(s =>
+        s.studentId.toLowerCase().includes(query) || s.fullName.toLowerCase().includes(query)
+      );
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="padding:14px; text-align:center; color:var(--muted);">No matching students.</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(st => `
+        <div class="roster-item">
+          <div>
+            <strong>${escapeHtml(st.fullName)}</strong>
+            <span style="color:var(--muted); font-size:0.8rem;">(${escapeHtml(st.studentId)})</span>
+            <span class="status-pill st-${st.status}">${st.status}</span>
+            ${st.time ? `<span style="font-size:0.75rem; color:var(--muted);">${escapeHtml(st.time)}</span>` : ''}
+          </div>
+          <div style="display:flex; gap:4px;">
+            <button class="btn btn-outline btn-sm" onclick="teacherManualMark('${escapeHtml(st.studentId)}','P')">P</button>
+            <button class="btn btn-outline btn-sm" onclick="teacherManualMark('${escapeHtml(st.studentId)}','L')">L</button>
+            <button class="btn btn-outline btn-sm" onclick="teacherManualMark('${escapeHtml(st.studentId)}','E')">E</button>
+            <button class="btn btn-outline btn-sm" title="Reset Device Lock" onclick="teacherResetStudentDevice('${escapeHtml(st.studentId)}')">🔓</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function teacherManualMark(studentId, status) {
+      const auth = getTeacherAuth();
+      const classId = document.getElementById('sel-tea-class').value;
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_MANUAL_MARK',
+        teacherToken: auth.token,
+        classId: classId,
+        studentId: studentId,
+        status: status
+      });
+      if (res.ok) applyTeacherState(res);
+      else showStatus(res.message || res.code, 'err');
+    }
+
+    async function teacherResetStudentDevice(studentId) {
+      if (!confirm(`Reset device lock for Student ID ${studentId}?`)) return;
+      const auth = getTeacherAuth();
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_RESET_DEVICE',
+        teacherToken: auth.token,
+        studentId: studentId
+      });
+      if (res.ok) {
+        showStatus(formatServerMessage('DEVICE_RESET_OK', { id: studentId }), 'success');
+      } else {
+        showStatus(res.message || res.code, 'warn');
+      }
+    }
+
+    async function teacherRotateStaticQr() {
+      if (!confirm('Generate a new Static QR secret? Your old printed QR poster for this class will stop working.')) return;
+      const auth = getTeacherAuth();
+      const classId = document.getElementById('sel-tea-class').value;
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_ROTATE_STATIC_QR',
+        teacherToken: auth.token,
+        classId: classId
+      });
+      if (res.ok) {
+        applyTeacherState(res);
+        showStatus('✅ Static QR secret replaced! Click Print to print your new poster.', 'success');
+      }
+    }
+
+    async function teacherToggleRegGate() {
+      const auth = getTeacherAuth();
+      const classId = document.getElementById('sel-tea-class').value;
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_TOGGLE_REG',
+        teacherToken: auth.token,
+        classId: classId
+      });
+      if (res.ok) applyTeacherState(res);
+    }
+
+    async function teacherRebuildSheet() {
+      const auth = getTeacherAuth();
+      const classId = document.getElementById('sel-tea-class').value;
+      showStatus('⏳ Synchronizing Google Sheet roster grids...', 'warn');
+      const res = await callBackend(auth.apiUrl, {
+        action: 'TEACHER_REBUILD_REPORT',
+        teacherToken: auth.token,
+        classId: classId
+      });
+      if (res.ok) showStatus('✅ Google Sheet roster columns synchronized!', 'success');
+    }
+
+    function onTeacherClassChange() {
+      refreshTeacherState();
+    }
+
+    function toggleRosterVisibility() {
+      showRosterNames = !showRosterNames;
+      renderTeacherRoster();
+    }
+
+    function toggleProjectorFullscreen() {
+      const main = document.getElementById('main-container');
+      main.classList.toggle('wide');
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    function startTeacherPolling() {
+      stopTeacherPolling();
+      teacherPollTimer = setInterval(refreshTeacherState, 4500);
+    }
+
+    function stopTeacherPolling() {
+      if (teacherPollTimer) clearInterval(teacherPollTimer);
+    }
+
+    /**
+     * ========================================================================
+     * 8. UTILITIES (Geolocation, SHA-256, Mode Switch, Language Switch)
+     * ========================================================================
+     */
+    function getAccuratePosition() {
+      return new Promise((resolve, reject) => {
+        if (!navigator.geolocation) return reject(new Error('No Geolocation'));
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0
+        });
+      });
+    }
+
+    async function sha256Browser(message) {
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => ('00' + b.toString(16)).slice(-2)).join('');
+    }
+
+    function switchMode(mode) {
+      stopCameraScanner();
+      hideStatus();
+      const stuBtn = document.getElementById('btn-mode-student');
+      const teaBtn = document.getElementById('btn-mode-teacher');
+      const stuView = document.getElementById('view-student');
+      const teaView = document.getElementById('view-teacher');
+
+      if (mode === 'TEACHER') {
+        stuBtn.classList.remove('active');
+        teaBtn.classList.add('active');
+        stuView.classList.add('hidden');
+        teaView.classList.remove('hidden');
+
+        const auth = getTeacherAuth();
+        if (auth) {
+          document.getElementById('inp-tea-api').value = auth.apiUrl;
+          document.getElementById('inp-tea-token').value = auth.token;
+          loginTeacher();
+        }
+      } else {
+        stopTeacherPolling();
+        teaBtn.classList.remove('active');
+        stuBtn.classList.add('active');
+        teaView.classList.add('hidden');
+        stuView.classList.remove('hidden');
+      }
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'vi' : 'en';
+      localStorage.setItem('cc_lang', currentLang);
+      applyLanguage();
+    }
+
+    function applyLanguage() {
+      document.documentElement.lang = currentLang;
+      document.getElementById('btn-lang').textContent = currentLang === 'en' ? '🇬🇧 EN | VI' : '🇻🇳 VI | EN';
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[currentLang][key]) {
+          el.textContent = I18N[currentLang][key];
+        }
+      });
+      checkIosStandaloneNotice();
+    }
+
+    function formatServerMessage(code, params = {}, fallback = '') {
+      let tpl = I18N[currentLang][code] || fallback || code;
+      Object.keys(params || {}).forEach(k => {
+        tpl = tpl.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+      });
+      return tpl;
+    }
+
+    function showStatus(msg, type = 'warn') {
+      const box = document.getElementById('status-box');
+      box.className = 'alert alert-' + (type === 'success' ? 'success' : type === 'err' ? 'err' : 'warn');
+      box.textContent = msg;
+      box.classList.remove('hidden');
+    }
+
+    function hideStatus() {
+      document.getElementById('status-box').classList.add('hidden');
+    }
+
+    function formatMmSs(totalSec) {
+      const m = String(Math.floor(totalSec / 60)).padStart(2, '0');
+      const s = String(totalSec % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+  </script>
+</body>
+</html>

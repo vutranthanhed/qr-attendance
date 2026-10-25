@@ -1,0 +1,16 @@
+{
+  "name": "ClassCheck QR Attendance",
+  "short_name": "ClassCheck",
+  "description": "Bilingual (EN/VI) Classroom QR & GPS Attendance System",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/3135/3135755.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
