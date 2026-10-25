@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ClassCheck QR — Nhận Bộ Công Cụ Điểm Danh Tự Động Miễn Phí</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0f172a;
+      --blue: #1e3a8a;
+      --teal: #0d9488;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Be Vietnam Pro', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    .topbar {
+      background: var(--navy);
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand { font-weight: 800; font-size: 1rem; color: #5eead4; }
+    .lang-btn {
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .container {
+      max-width: 780px;
+      margin: 28px auto;
+      padding: 0 16px;
+    }
+    .hero-card {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 55%, #0f766e 100%);
+      color: #fff;
+      border-radius: 24px;
+      padding: 36px 32px;
+      box-shadow: 0 20px 45px rgba(15, 23, 42, 0.22);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .tag {
+      display: inline-block;
+      background: rgba(20, 184, 166, 0.25);
+      border: 1px solid rgba(94, 234, 212, 0.5);
+      color: #99f6e4;
+      font-size: 0.78rem;
+      font-weight: 800;
+      padding: 5px 14px;
+      border-radius: 999px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+    .hero-card h1 {
+      font-size: 1.85rem;
+      font-weight: 900;
+      line-height: 1.25;
+      margin-bottom: 12px;
+    }
+    .hero-card p {
+      font-size: 0.98rem;
+      color: #e2e8f0;
+      max-width: 620px;
+      margin: 0 auto 24px;
+    }
+    .cta-box {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 18px;
+      padding: 22px;
+      margin-top: 18px;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #10b981;
+      color: #052e16;Fwe
+      font-size: 1.08rem;
+      font-weight: 800;
+      padding: 16px 30px;
+      border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+      transition: transform 0.15s, background 0.15s;
+      margin-top: 12px;
+    }
+    .cta-btn:hover {
+      background: #34d399;
+      transform: translateY(-2px);
+    }
+    .info-card {
+      background: var(--card);
+      border: 1px solid #cbd5e1;
+      border-radius: 20px;
+      padding: 26px 28px;
+      margin-bottom: 20px;
+    }
+    .info-card h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 14px;
+    }
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+    @media (max-width: 600px) {
+      .feat-grid { grid-template-columns: 1fr; }
+    }
+    .feat-item {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .feat-icon {
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+    .feat-item h4 {
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--navy);
+      margin-bottom: 3px;
+    }
+    .feat-item p {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+    .step-flow {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .flow-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      padding: 14px 18px;
+      border-radius: 12px;
+    }
+    .flow-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--teal);
+      color: #fff;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">🎓 TERECONET × ClassCheck QR</div>
+    <button class="lang-btn" id="btn-lang" onclick="toggleLang()">🇬🇧 English | 🇻🇳 Tiếng Việt</button>
+  </header>
+
+  <main class="container">
+
+    <section class="hero-card">
+      <div class="tag" data-i18n="tag">🎁 Chia sẻ Công cụ Lớp học Mở & Miễn phí</div>
+      <h1 data-i18n="title">Ứng Dụng Điểm Danh Tự Động Bằng Mã QR (ClassCheck QR v2.1)</h1>
+      <p data-i18n="subtitle">
+        Giải pháp tự động hóa điểm danh sinh viên trong 5 giây — Tích hợp khóa thiết bị (1 Điện thoại = 1 MSSV), xác thực vị trí GPS phòng học và đồng bộ trực tiếp vào Google Sheets.
+      </p>
+
+      <div class="cta-box">
+        <div style="font-weight:700; font-size:0.96rem; color:#99f6e4; margin-bottom:6px;" data-i18n="invite_heading">
+          🔓 CÁCH NHẬN BỘ CÔNG CỤ & FILE MẪU MIỄN PHÍ:
+        </div>
+        <div style="font-size:0.9rem; color:#fff;" data-i18n="invite_desc">
+          Để nhận đường dẫn tải toàn bộ File Mẫu Google Sheet + Mã nguồn & Hướng dẫn cài đặt, kính mời Quý Thầy/Cô hoàn thành <strong>Khảo sát Nhu cầu Phát triển Năng lực Nghiên cứu (TERECONET)</strong>. Đường dẫn Google Drive sẽ tự động mở khóa ngay sau khi Thầy/Cô nhấn Gửi khảo sát!
+        </div>
+
+        <!-- PUT YOUR EXISTING SURVEY WEB APP URL IN THE HREF BELOW -->
+        <a id="survey-btn" href="https://script.google.com/macros/s/AKfycbzzzB_ATzdfPbcagZilRmm5_8KArAXW7DDQ24VroxH76CFisK_rpg1pL8XDeKAW7ex1FA/exec" class="cta-btn" data-i18n="cta_btn">
+          📝 Thực hiện Khảo sát & Nhận Link Tải Công cụ ➔
+        </a>
+
+        <div style="font-size:0.78rem; color:#cbd5e1; margin-top:10px;" data-i18n="time_note">
+          ⏱️ Thời gian khảo sát: ~5 phút (Chế độ Nhanh) • Có cơ hội tham gia Bốc thăm May mắn từ TERECONET
+        </div>
+      </div>
+    </section>
+
+    <section class="info-card">
+      <h2 data-i18n="how_title">3 Bước Nhận & Sử Dụng Bộ Công Cụ</h2>
+      <div class="step-flow">
+        <div class="flow-row">
+          <div class="flow-num">1</div>
+          <div>
+            <strong data-i18n="s1_t">Hoàn thành Khảo sát TERECONET (~5 phút)</strong>
+            <div style="font-size:0.84rem; color:var(--muted);" data-i18n="s1_d">Chia sẻ nhu cầu bồi dưỡng năng lực nghiên cứu của bạn (dữ liệu hoàn toàn ẩn danh).</div>
+          </div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-num">2</div>
+          <div>
+            <strong data-i18n="s2_t">Nhận Link Thư mục Google Drive ngay ở Màn hình Kết thúc</strong>
+            <div style="font-size:0.84rem; color:var(--muted);" data-i18n="s2_d">Ngay khi bấm Submit ở cuối bài khảo sát, nút mở thư mục Google Drive chứa trọn bộ công cụ sẽ xuất hiện.</div>
+          </div>
+        </div>
+        <div class="flow-row">
+          <div class="flow-num">3</div>
+          <div>
+            <strong data-i18n="s3_t">Tạo bản sao Google Sheet về tài khoản cá nhân & Sử dụng ngay</strong>
+            <div style="font-size:0.84rem; color:var(--muted);" data-i18n="s3_d">Không cần biết lập trình hay tạo tài khoản GitHub. Thiết lập trong 5 phút và dùng cho nhiều lớp, nhiều học kỳ.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="info-card">
+      <h2 data-i18n="feat_title">Tính Năng Nổi Bật Của ClassCheck QR v2.1</h2>
+      <div class="feat-grid">
+        <div class="feat-item">
+          <span class="feat-icon">🔒</span>
+          <div>
+            <h4 data-i18n="f1_t">Khóa thiết bị (1 Máy = 1 MSSV)</h4>
+            <p data-i18n="f1_d">Ngăn chặn triệt để tình trạng 1 sinh viên trong lớp nhập hộ MSSV cho nhiều bạn vắng mặt.</p>
+          </div>
+        </div>
+        <div class="feat-item">
+          <span class="feat-icon">📍</span>
+          <div>
+            <h4 data-i18n="f2_t">Kiểm tra khoảng cách GPS</h4>
+            <p data-i18n="f2_d">Vô hiệu hóa việc chụp ảnh mã QR gửi vào nhóm chat cho bạn ở nhà quét.</p>
+          </div>
+        </div>
+        <div class="feat-item">
+          <span class="feat-icon">🔄</span>
+          <div>
+            <h4 data-i18n="f3_t">Hỗ trợ cả QR Tĩnh & QR Động 15 giây</h4>
+            <p data-i18n="f3_d">Dùng 1 bảng QR ép plastic cả học kỳ hoặc bật QR tự đổi mỗi 15 giây trên máy chiếu.</p>
+          </div>
+        </div>
+        <div class="feat-item">
+          <span class="feat-icon">💻</span>
+          <div>
+            <h4 data-i18n="f4_t">Điều khiển trên Điện thoại & PC</h4>
+            <p data-i18n="f4_d">Giao diện song ngữ Việt – Anh, tự động tổng hợp bảng điểm danh trên Google Sheets.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const DICT = {
+      vi: {
+        tag: "🎁 Chia sẻ Công cụ Lớp học Mở & Miễn phí",
+        title: "Ứng Dụng Điểm Danh Tự Động Bằng Mã QR (ClassCheck QR v2.1)",
+        subtitle: "Giải pháp tự động hóa điểm danh sinh viên trong 5 giây — Tích hợp khóa thiết bị (1 Điện thoại = 1 MSSV), xác thực vị trí GPS phòng học và đồng bộ trực tiếp vào Google Sheets.",
+        invite_heading: "🔓 CÁCH NHẬN BỘ CÔNG CỤ & FILE MẪU MIỄN PHÍ:",
+        invite_desc: "Để nhận đường dẫn tải toàn bộ File Mẫu Google Sheet + Mã nguồn & Hướng dẫn cài đặt, kính mời Quý Thầy/Cô hoàn thành Khảo sát Nhu cầu Phát triển Năng lực Nghiên cứu (TERECONET). Đường dẫn Google Drive sẽ tự động mở khóa ngay sau khi Thầy/Cô nhấn Gửi khảo sát!",
+        cta_btn: "📝 Thực hiện Khảo sát & Nhận Link Tải Công cụ ➔",
+        time_note: "⏱️ Thời gian khảo sát: ~5 phút (Chế độ Nhanh) • Có cơ hội tham gia Bốc thăm May mắn từ TERECONET",
+        how_title: "3 Bước Nhận & Sử Dụng Bộ Công Cụ",
+        s1_t: "Hoàn thành Khảo sát TERECONET (~5 phút)",
+        s1_d: "Chia sẻ nhu cầu bồi dưỡng năng lực nghiên cứu của bạn (dữ liệu hoàn toàn ẩn danh).",
+        s2_t: "Nhận Link Thư mục Google Drive ngay ở Màn hình Kết thúc",
+        s2_d: "Ngay khi bấm Submit ở cuối bài khảo sát, nút mở thư mục Google Drive chứa trọn bộ công cụ sẽ xuất hiện.",
+        s3_t: "Tạo bản sao Google Sheet về tài khoản cá nhân & Sử dụng ngay",
+        s3_d: "Không cần biết lập trình hay tạo tài khoản GitHub. Thiết lập trong 5 phút và dùng cho nhiều lớp, nhiều học kỳ.",
+        feat_title: "Tính Năng Nổi Bật Của ClassCheck QR v2.1",
+        f1_t: "Khóa thiết bị (1 Máy = 1 MSSV)",
+        f1_d: "Ngăn chặn triệt để tình trạng 1 sinh viên trong lớp nhập hộ MSSV cho nhiều bạn vắng mặt.",
+        f2_t: "Kiểm tra khoảng cách GPS",
+        f2_d: "Vô hiệu hóa việc chụp ảnh mã QR gửi vào nhóm chat cho bạn ở nhà quét.",
+        f3_t: "Hỗ trợ cả QR Tĩnh & QR Động 15 giây",
+        f3_d: "Dùng 1 bảng QR ép plastic cả học kỳ hoặc bật QR tự đổi mỗi 15 giây trên máy chiếu.",
+        f4_t: "Điều khiển trên Điện thoại & PC",
+        f4_d: "Giao diện song ngữ Việt – Anh, tự động tổng hợp bảng điểm danh trên Google Sheets."
+      },
+      en: {
+        tag: "🎁 Free & Open Classroom Tool for Educators",
+        title: "Automated QR Classroom Attendance System (ClassCheck QR v2.1)",
+        subtitle: "Automate student attendance in 5 seconds — featuring Browser Device Locking (1 Phone = 1 Student ID), GPS Classroom Proximity Checks, and live Google Sheets sync.",
+        invite_heading: "🔓 HOW TO UNLOCK THIS FREE TOOLKIT:",
+        invite_desc: "To access the complete Google Sheet Template, source files, and setup guide for free, you are invited to complete the TERECONET Researcher Development Needs Survey. The Google Drive folder link will automatically unlock on the confirmation screen right after you click Submit!",
+        cta_btn: "📝 Complete Survey & Unlock Toolkit Folder ➔",
+        time_note: "⏱️ Takes ~5 mins (Brief Mode) • Includes optional entry into the TERECONET Lucky Draw",
+        how_title: "3 Simple Steps to Unlock & Use",
+        s1_t: "Complete the TERECONET Survey (~5 minutes)",
+        s1_d: "Share your researcher development priorities (all responses are strictly anonymous).",
+        s2_t: "Get Instant Access to the Google Drive Folder on Submit",
+        s2_d: "As soon as you submit the survey, the direct link to the ClassCheck QR Google Drive folder appears on screen.",
+        s3_t: "Make a Copy of the Google Sheet Template & Start Teaching",
+        s3_d: "No coding or GitHub account needed. Set up in 5 minutes and reuse across multiple classes and semesters.",
+        feat_title: "Key Features of ClassCheck QR v2.1",
+        f1_t: "Device Binding (1 Phone = 1 Student ID)",
+        f1_d: "Prevents students in class from typing in absent friends' Student IDs on their phone.",
+        f2_t: "GPS Classroom Geofencing",
+        f2_d: "Makes sending photos of the QR code to group chats useless for students sitting at home.",
+        f3_t: "Static Poster & 15s Rotating Projector QR",
+        f3_d: "Use one laminated QR card all semester or project a rotating QR that changes every 15 seconds.",
+        f4_t: "Manage from Phone or Classroom PC",
+        f4_d: "Bilingual EN/VI interface with automatic P/L roster matrices inside Google Sheets."
+      }
+    };
+
+    let lang = 'vi';
+    function toggleLang() {
+      lang = lang === 'vi' ? 'en' : 'vi';
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const k = el.getAttribute('data-i18n');
+        if (DICT[lang][k]) el.textContent = DICT[lang][k];
+      });
+    }
+  </script>
+</body>
+</html>
